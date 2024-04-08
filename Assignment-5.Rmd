@@ -1,0 +1,200 @@
+---
+title: "FML"
+author: "srikanth chetlapally"
+date: "2024-04-07"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, Comment = NA)
+```
+
+
+
+```{r}
+getwd()
+```
+```{r}
+setwd("C:/Users/srika/Downloads")
+```
+
+```{r}
+# installing required packages
+library(ISLR)
+library(caret)
+```
+
+```{r}
+library(dplyr)
+```
+
+```{r}
+library(cluster)
+library(factoextra)
+```
+
+```{r}
+library(NbClust)
+library(ppclust)
+library(dendextend)
+```
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+library(ggplot2)
+library(proxy)
+```
+
+First, read the data and remove rows with missing values.
+```{r}
+library(readr)
+# To import the "cereal" data collection.
+Cereals <- Cereals <- read_csv("C:/Users/srika/Downloads/Cereals.csv")
+# Using head, obtain the first few rows of the data collection
+head(Cereals)
+```
+
+```{r}
+# Using str to analyze the data set's structure
+str(Cereals)
+```
+
+```{r}
+#applying the summary to analyze the data set
+summary(Cereals)
+```
+
+
+Now I am scaling the data to remove NA values from the data set.
+```{r}
+# For preparation, I'm creating a clone of this data set here.
+Scaled_Cereals <- Cereals
+# I'm scaling the data set right now to fit it into a clustering approach.
+Scaled_Cereals[ , c(4:16)] <- scale(Cereals[ , c(4:16)])
+#Here, I'm eliminating the NA values from the data collection using the omit function.
+Preprocessed_Cereal <- na.omit(Scaled_Cereals)
+# Utilizing head to show the top five rows after removing NA
+head(Preprocessed_Cereal)
+```
+
+Following pre-processing and scaling, there were 74 observations overall as opposed to 77 before. There were just 3 records with the value "NA."
+
+
+Question 
+Apply hierarchical clustering to the data using Euclidean distance to the normalized measurements. 
+Use Agnes to compare the clustering from single linkage, complete linkage, average linkage, and Ward. Choose the best method.
+
+Solution
+
+Single Linkage:
+```{r}
+#For all of the numerical values, the dissimilarity matrix is created 
+#using Euclidean distance measurements.
+Cereal_Euclidean <- dist(Preprocessed_Cereal[ , c(4:16)], method = "euclidean")
+# A hierarchical clustering is carried out using the single linkage approach.
+HC_Single <- agnes(Cereal_Euclidean, method = "single")
+# Here, I'm charting the results of the several methods.
+plot(HC_Single,
+main = "Customer Cereal Ratings - AGNES Using Single Linkage Method",
+xlab = "Cereal",
+ylab = "Height",
+cex.axis = 1,
+cex = 0.50)
+```
+
+Complete Linkage:
+```{r}
+# utilizing the complete linkage technique to carry out hierarchical clustering
+HC_Complete <- agnes(Cereal_Euclidean, method = "complete")
+#Here, I'm charting the results of the several methods.
+plot(HC_Complete,
+main = "Customer Cereal Ratings - AGNES Using Complete Linkage Method",
+xlab = "Cereal",
+ylab = "Height",
+cex.axis = 1,
+cex = 0.50)
+```
+
+Average Linkage:
+```{r}
+# Utilizing the hierarchical clustering technique of average linkage
+HC_Average <- agnes(Cereal_Euclidean, method = "average")
+# I'm plotting the outcomes of the various approaches here.
+plot(HC_Average,
+main = "Customer Cereal Ratings - AGNES using Average Linkage Method",
+xlab = "Cereal",
+ylab = "Height",
+cex.axis = 1,
+cex = 0.50)
+```
+
+Ward Method:
+```{r}
+# Using the ward linkage technique to create hierarchical clusters
+HC_Ward <- agnes(Cereal_Euclidean, method = "ward")
+# I'm charting the results of the various approaches.
+plot(HC_Ward,
+main = "Customer Cereal Ratings - AGNES using Ward Linkage Method",
+xlab = "Cereal",
+ylab = "Height",
+cex.axis = 1,
+cex = 0.55)
+```
+
+The closer the clustering structure, the closer the value is to 1.0. Consequently, the strategy that has the value closest to 1.0 will be chosen. Linkage Only: 0.61 Total Connection: 0.84 Linkage on average: 0.78
+Ward Approach: 0.90 Here The Ward approach is the most effective clustering model based on the results.
+
+
+Question:How many clusters would you choose?
+
+Here I am using elbow and silhouette methods to determine the
+appropriate number of clusters.
+Elbow Method:
+```{r}
+fviz_nbclust(Preprocessed_Cereal[ , c(4:16)], hcut, method = "wss", k.max = 25) +
+labs(title = "Optimal Number of Clusters using Elbow Method") +
+geom_vline(xintercept = 12, linetype = 2)
+```
+
+
+##Silhouette Method:
+```{r}
+fviz_nbclust(Preprocessed_Cereal[ , c(4:16)],
+hcut,
+method = "silhouette",
+k.max = 25) +
+labs(title = "Optimal Number of Clusters using Silhouette Method")
+```
+
+The findings of the elbow and silhouette approaches show that 12 clusters would be the ideal quantity.
+```{r}
+#I'm using this to plot the Ward hierarchical tree.  
+#the 12 groups that are indicated for your reference.
+plot(HC_Ward, 
+     main = "AGNES - Ward Linkage Method using 12 Clusters Outlined",
+     xlab = "Cereal",
+     ylab = "Height",
+     cex.axis = 1, 
+     cex = 0.50,)
+rect.hclust(HC_Ward, k = 12, border = 1:12)
+```
+
+# Using the partitioned data, we can see graphically that Cluster 3 shrank significantly.Some of the other clusters became larger as a result. The graph indicates that the clusters split when the data was dispersed more equally among the 12 clusters.
+
+
+##Assignment-D
+
+#"The elementary public schools want to select a line of cereals to serve in their cafeterias on a daily basis. There is a different cereal available each day, but all of the cereals ought to encourage a balanced diet. To complete this task, you must locate a cluster of "healthy cereals." Must the data be standardized? How should they be used to the cluster analysis if not?”
+
+#In this instance, normalizing the data would not be suitable. This is because the way the nutrition data from cereals is scaled or normalized depends on the specific cereal sample that is being studied. This means that only cereals with exceptionally high sugar content and extremely low iron, fiber, and other nutritional content may have been included in the data set that was collected. The nutritional value of cereal for a child cannot be ascertained when the data is standardized or scaled inside the sample set. Uninformed observers may conclude that cereal with an iron score of 0.999 almost completely satisfies a child's iron requirements; yet, it may simply be the best cereal in the sample set with negligible to no nutritious value.
+
+#It would therefore be more acceptable to preprocess the data as a ratio to a child's daily recommended consumption of calories, fiber, carbohydrates, etc. Because of this, analysts would have more information to examine the clusters and wouldn't allow a few significant variables to skew the distance computations. The cluster average might be used by an analyst analyzing the clusters to determine how much XX cereal a student would need to eat each day in order to achieve prescribed nutritional needs. This would allow the staff to select the "healthy" cereal clusters from an informed selection.
+
+
+
+
